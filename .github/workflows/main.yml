@@ -1,0 +1,30 @@
+# This is a workflow to automatically push repo changes to Bitnami Server:
+name: CI to Bitnami
+# Controls when the workflow will run
+on:
+  #Triggers the workflow on push request events for the main branch
+  push:
+    branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps for this job
+    steps:
+      - name: Install SSH Key
+      # Uses marketplace action to configure SSH
+        uses: shimataro/ssh-key-action@v2.1.0
+        #Configures credentials/cross-origin whitelist 
+        with:
+          # TODO: ADD my/default ssh rsa-key (TBD) to secrets
+          key: ${{secrets.SSH_KEY}}
+          known_hosts: ${{secrets.KNOWN_HOSTS}}
+      #Connects through SSH    
+      - name: SSH connect to Bitnami/GCP VM
+        run: ssh ${{secrets.DEFAULT_DEVELOPER}}@${{secrets.BITNAMI_SERVER}}
+
+      # cd's into appropriate repo and pulls updates from github
+      - name: Pulling changes from GitHub to Bitnami
+        run: cd ~/apps/edx/edx-platform && sudo git pull 
